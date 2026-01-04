@@ -1,0 +1,10 @@
+{
+  "uuid": "disable-touchscreen-gestures@local",
+  "name": "Disable Touchscreen Gestures",
+  "description": "Disables multi-touch touchscreen gestures to prevent Activities panel and workspace switching from triggering during multi-finger touch input",
+  "shell-version": [
+    "45",
+    "46"
+  ],
+  "url": "https://github.com/trival/gnome-disable-touchscreen-gestures"
+}
