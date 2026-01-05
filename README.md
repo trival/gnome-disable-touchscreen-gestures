@@ -46,14 +46,14 @@ When disabled:
 
 ### Step 1: Clone Repository
 ```bash
-mkdir -p ~/code/config
-cd ~/code/config
-git clone <your-repo-url> gnome-disable-touchscreen-gestures
+mkdir -p <path/to/local/repo>
+cd <path/to/local/repo>
+git clone https://github.com/trival/gnome-disable-touchscreen-gestures.git
 ```
 
 Or if you have the files locally:
 ```bash
-mkdir -p ~/code/config/gnome-disable-touchscreen-gestures
+mkdir -p <path/to/local/repo>/gnome-disable-touchscreen-gestures
 # Copy files to this directory
 ```
 
@@ -65,15 +65,15 @@ GNOME Shell loads extensions from `~/.local/share/gnome-shell/extensions/`. We'l
 mkdir -p ~/.local/share/gnome-shell/extensions/
 
 # Create symlink (UUID must match metadata.json)
-ln -s ~/code/config/gnome-disable-touchscreen-gestures \
-      ~/.local/share/gnome-shell/extensions/disable-touchscreen-gestures@yourname.com
+ln -s <path/to/local/repo>/gnome-disable-touchscreen-gestures \
+      ~/.local/share/gnome-shell/extensions/disable-touchscreen-gestures@local
 ```
 
-**Important**: The symlink name (`disable-touchscreen-gestures@yourname.com`) must exactly match the `uuid` field in `metadata.json`.
+**Important**: The symlink name (`disable-touchscreen-gestures@local`) must exactly match the `uuid` field in `metadata.json`.
 
 ### Step 3: Enable Extension
 ```bash
-gnome-extensions enable disable-touchscreen-gestures@yourname.com
+gnome-extensions enable disable-touchscreen-gestures@local
 ```
 
 ### Step 4: Restart GNOME Shell
@@ -90,20 +90,20 @@ Check if extension is enabled:
 gnome-extensions list --enabled | grep disable-touchscreen
 ```
 
-You should see: `disable-touchscreen-gestures@yourname.com`
+You should see: `disable-touchscreen-gestures@local`
 
 ## Usage
 
 ### Enable Gestures Disabling
 ```bash
-gnome-extensions enable disable-touchscreen-gestures@yourname.com
+gnome-extensions enable disable-touchscreen-gestures@local
 ```
 
 Then log out and log back in (Wayland) or restart GNOME Shell (X11).
 
 ### Disable Gestures Disabling (Return to Normal)
 ```bash
-gnome-extensions disable disable-touchscreen-gestures@yourname.com
+gnome-extensions disable disable-touchscreen-gestures@local
 ```
 
 Then log out and log back in (Wayland) or restart GNOME Shell (X11).
@@ -123,31 +123,32 @@ To set up this extension on another machine:
 1. **Copy the repository**:
    ```bash
    # On original machine
-   cd ~/code/config
+   cd <path/to/local/repo>
    tar czf gnome-disable-touchscreen-gestures.tar.gz gnome-disable-touchscreen-gestures/
 
    # Transfer to new machine, then:
-   mkdir -p ~/code/config
-   cd ~/code/config
+   mkdir -p <path/to/local/repo>
+   cd <path/to/local/repo>
    tar xzf gnome-disable-touchscreen-gestures.tar.gz
    ```
 
    Or use git:
    ```bash
-   cd ~/code/config
-   git clone <your-repo-url> gnome-disable-touchscreen-gestures
+   mkdir -p <path/to/local/repo>
+   cd <path/to/local/repo>
+   git clone https://github.com/trival/gnome-disable-touchscreen-gestures.git
    ```
 
 2. **Create symlink**:
    ```bash
    mkdir -p ~/.local/share/gnome-shell/extensions/
-   ln -s ~/code/config/gnome-disable-touchscreen-gestures \
-         ~/.local/share/gnome-shell/extensions/disable-touchscreen-gestures@yourname.com
+   ln -s <path/to/local/repo>/gnome-disable-touchscreen-gestures \
+         ~/.local/share/gnome-shell/extensions/disable-touchscreen-gestures@local
    ```
 
 3. **Enable extension**:
    ```bash
-   gnome-extensions enable disable-touchscreen-gestures@yourname.com
+   gnome-extensions enable disable-touchscreen-gestures@local
    ```
 
 4. **Log out and log back in**
@@ -191,8 +192,8 @@ For detailed technical information, see [implementation.md](implementation.md).
 
 3. Try disabling and re-enabling:
    ```bash
-   gnome-extensions disable disable-touchscreen-gestures@yourname.com
-   gnome-extensions enable disable-touchscreen-gestures@yourname.com
+   gnome-extensions disable disable-touchscreen-gestures@local
+   gnome-extensions enable disable-touchscreen-gestures@local
    ```
 
 4. Log out and log back in (required on Wayland)
@@ -210,7 +211,7 @@ For detailed technical information, see [implementation.md](implementation.md).
    ls -la ~/.local/share/gnome-shell/extensions/ | grep disable-touchscreen
 
    # Check metadata.json uuid
-   cat ~/code/config/gnome-disable-touchscreen-gestures/metadata.json | grep uuid
+   cat <path/to/local/repo>/gnome-disable-touchscreen-gestures/metadata.json | grep uuid
    ```
    These must match exactly.
 
@@ -229,17 +230,17 @@ For detailed technical information, see [implementation.md](implementation.md).
 If system updates break the symlink:
 ```bash
 # Remove old symlink
-rm ~/.local/share/gnome-shell/extensions/disable-touchscreen-gestures@yourname.com
+rm ~/.local/share/gnome-shell/extensions/disable-touchscreen-gestures@local
 
 # Recreate symlink
-ln -s ~/code/config/gnome-disable-touchscreen-gestures \
-      ~/.local/share/gnome-shell/extensions/disable-touchscreen-gestures@yourname.com
+ln -s <path/to/local/repo>/gnome-disable-touchscreen-gestures \
+      ~/.local/share/gnome-shell/extensions/disable-touchscreen-gestures@local
 ```
 
 ### Extension Doesn't Persist After Reboot
 Ensure extension is enabled and set to auto-start:
 ```bash
-gnome-extensions enable disable-touchscreen-gestures@yourname.com
+gnome-extensions enable disable-touchscreen-gestures@local
 ```
 
 The extension should survive reboots once enabled.
@@ -258,17 +259,17 @@ To completely remove the extension:
 
 1. **Disable extension**:
    ```bash
-   gnome-extensions disable disable-touchscreen-gestures@yourname.com
+   gnome-extensions disable disable-touchscreen-gestures@local
    ```
 
 2. **Remove symlink**:
    ```bash
-   rm ~/.local/share/gnome-shell/extensions/disable-touchscreen-gestures@yourname.com
+   rm ~/.local/share/gnome-shell/extensions/disable-touchscreen-gestures@local
    ```
 
 3. **Optionally, remove repository**:
    ```bash
-   rm -rf ~/code/config/gnome-disable-touchscreen-gestures
+   rm -rf <path/to/local/repo>/gnome-disable-touchscreen-gestures
    ```
 
 4. **Log out and log back in** to fully unload the extension
@@ -277,7 +278,7 @@ To completely remove the extension:
 
 ### Directory Structure
 ```
-~/code/config/gnome-disable-touchscreen-gestures/
+<path/to/local/repo>/gnome-disable-touchscreen-gestures/
 ├── .git/                    # Git repository
 ├── README.md               # This file (user documentation)
 ├── implementation.md       # Technical documentation and research
@@ -286,7 +287,7 @@ To completely remove the extension:
 ```
 
 ### Modifying the Extension
-1. Edit files in `~/code/config/gnome-disable-touchscreen-gestures/`
+1. Edit files in `<path/to/local/repo>/gnome-disable-touchscreen-gestures/`
 2. Changes are immediately available (via symlink)
 3. Restart GNOME Shell to reload changes:
    - Wayland: Log out and log back in
@@ -321,7 +322,7 @@ Contributions are welcome! Please:
 
 ## License
 
-[Choose appropriate license - e.g., GPL-3.0, MIT, etc.]
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
