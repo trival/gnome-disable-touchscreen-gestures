@@ -1,5 +1,5 @@
-import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
-import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
+import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
 /**
  * Disable Touchscreen Gestures Extension
@@ -14,99 +14,138 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
  * 4. Store original state for clean restoration on disable
  */
 export default class DisableTouchscreenGestures extends Extension {
-  enable() {
-    this._savedState = [];
+	enable() {
+		// Initial disable of all gestures
+		this._disableGestures();
 
-    // Initial disable of all gestures
-    this._disableGestures();
+		// Monitor focus changes to re-apply disabling
+		// Some apps or GNOME Shell actions might re-enable gesture actions
+		this._focusWindowId = global.display.connect(
+			"notify::focus-window",
+			this._disableGestures.bind(this),
+		);
 
-    // Monitor focus changes to re-apply disabling
-    // Some apps or GNOME Shell actions might re-enable gesture actions
-    this._focusWindowId = global.display.connect(
-      'notify::focus-window',
-      this._disableGestures.bind(this)
-    );
+		// Monitor fullscreen changes
+		this._fullscreenId = global.display.connect(
+			"in-fullscreen-changed",
+			this._disableGestures.bind(this),
+		);
 
-    // Monitor fullscreen changes
-    this._fullscreenId = global.display.connect(
-      'in-fullscreen-changed',
-      this._disableGestures.bind(this)
-    );
+		// Monitor workspace switches
+		this._workspaceChangeId = global.workspace_manager.connect(
+			"active-workspace-changed",
+			this._disableGestures.bind(this),
+		);
 
-    console.log('Disable Touchscreen Gestures: enabled');
-  }
+		// Monitor when exiting Activities overview back to applications
+		// This ensures gestures are re-disabled when returning to app windows
+		this._overviewHiddenId = Main.overview.connect(
+			"hidden",
+			this._disableGestures.bind(this),
+		);
 
-  _disableGestures() {
-    // Clear any existing saved state
-    this._savedState = [];
+		console.log("Disable Touchscreen Gestures: enabled");
+	}
 
-    // Disable all gesture actions on the stage
-    // This is the main mechanism that disables both touchscreen and touchpad gestures
-    global.stage.get_actions().forEach(action => {
-      this._savedState.push({
-        action: action,
-        wasEnabled: action.enabled
-      });
-      action.enabled = false;
-    });
+	_disableGestures() {
+		// Clear any existing saved state
+		this._savedState = [];
 
-    // Also explicitly disable SwipeTracker instances for redundancy
-    // These handle the Activities panel and workspace switching specifically
+		// Disable all gesture actions on the stage
+		// This is the main mechanism that disables both touchscreen and touchpad gestures
+		global.stage.get_actions().forEach((action) => {
+			this._savedState.push({
+				action: action,
+				wasEnabled: action.enabled,
+			});
+			action.enabled = false;
+		});
 
-    // Disable Activities overview swipe tracker
-    try {
-      if (Main.overview._swipeTracker) {
-        Main.overview._swipeTracker.enabled = false;
-      }
-    } catch (e) {
-      console.warn('Disable Touchscreen Gestures: Could not disable overview swipe tracker:', e);
-    }
+		// Also explicitly disable SwipeTracker instances for redundancy
+		// These handle the Activities panel and workspace switching specifically
 
-    // Disable workspace animation swipe tracker
-    try {
-      if (Main.wm._workspaceAnimation && Main.wm._workspaceAnimation._swipeTracker) {
-        Main.wm._workspaceAnimation._swipeTracker.enabled = false;
-      }
-    } catch (e) {
-      console.warn('Disable Touchscreen Gestures: Could not disable workspace animation swipe tracker:', e);
-    }
-  }
+		// Disable Activities overview swipe tracker
+		try {
+			if (Main.overview._swipeTracker) {
+				Main.overview._swipeTracker.enabled = false;
+			}
+		} catch (e) {
+			console.warn(
+				"Disable Touchscreen Gestures: Could not disable overview swipe tracker:",
+				e,
+			);
+		}
 
-  disable() {
-    // Disconnect signal handlers
-    if (this._focusWindowId) {
-      global.display.disconnect(this._focusWindowId);
-      this._focusWindowId = null;
-    }
+		// Disable workspace animation swipe tracker
+		try {
+			if (
+				Main.wm._workspaceAnimation &&
+				Main.wm._workspaceAnimation._swipeTracker
+			) {
+				Main.wm._workspaceAnimation._swipeTracker.enabled = false;
+			}
+		} catch (e) {
+			console.warn(
+				"Disable Touchscreen Gestures: Could not disable workspace animation swipe tracker:",
+				e,
+			);
+		}
+	}
 
-    if (this._fullscreenId) {
-      global.display.disconnect(this._fullscreenId);
-      this._fullscreenId = null;
-    }
+	disable() {
+		// Disconnect signal handlers
+		if (this._focusWindowId) {
+			global.display.disconnect(this._focusWindowId);
+			this._focusWindowId = null;
+		}
 
-    // Restore original gesture states
-    this._savedState.forEach(({action, wasEnabled}) => {
-      action.enabled = wasEnabled;
-    });
-    this._savedState = [];
+		if (this._fullscreenId) {
+			global.display.disconnect(this._fullscreenId);
+			this._fullscreenId = null;
+		}
 
-    // Re-enable SwipeTracker instances
-    try {
-      if (Main.overview._swipeTracker) {
-        Main.overview._swipeTracker.enabled = true;
-      }
-    } catch (e) {
-      console.warn('Disable Touchscreen Gestures: Could not re-enable overview swipe tracker:', e);
-    }
+		if (this._workspaceChangeId) {
+			global.workspace_manager.disconnect(this._workspaceChangeId);
+			this._workspaceChangeId = null;
+		}
 
-    try {
-      if (Main.wm._workspaceAnimation && Main.wm._workspaceAnimation._swipeTracker) {
-        Main.wm._workspaceAnimation._swipeTracker.enabled = true;
-      }
-    } catch (e) {
-      console.warn('Disable Touchscreen Gestures: Could not re-enable workspace animation swipe tracker:', e);
-    }
+		if (this._overviewHiddenId) {
+			Main.overview.disconnect(this._overviewHiddenId);
+			this._overviewHiddenId = null;
+		}
 
-    console.log('Disable Touchscreen Gestures: disabled');
-  }
+		// Restore original gesture states
+		this._savedState.forEach(({ action, wasEnabled }) => {
+			action.enabled = wasEnabled;
+		});
+		this._savedState = [];
+
+		// Re-enable SwipeTracker instances
+		try {
+			if (Main.overview._swipeTracker) {
+				Main.overview._swipeTracker.enabled = true;
+			}
+		} catch (e) {
+			console.warn(
+				"Disable Touchscreen Gestures: Could not re-enable overview swipe tracker:",
+				e,
+			);
+		}
+
+		try {
+			if (
+				Main.wm._workspaceAnimation &&
+				Main.wm._workspaceAnimation._swipeTracker
+			) {
+				Main.wm._workspaceAnimation._swipeTracker.enabled = true;
+			}
+		} catch (e) {
+			console.warn(
+				"Disable Touchscreen Gestures: Could not re-enable workspace animation swipe tracker:",
+				e,
+			);
+		}
+
+		console.log("Disable Touch		this._savedState = [];screen Gestures: disabled");
+	}
 }
